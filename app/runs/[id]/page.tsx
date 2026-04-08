@@ -40,11 +40,17 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
       .finally(() => setLoading(false))
   }
 
+  // Auto-trigger evaluate when enrich completes
+  useEffect(() => {
+    if (data?.run.status === 'evaluating' && (data.evaluations?.length ?? 0) === 0) {
+      fetch(`/api/runs/${id}/evaluate`, { method: 'POST' }).catch(() => {})
+    }
+  }, [data?.run.status])
+
   useEffect(() => {
     fetchData()
-    // Poll if run is in progress
     const interval = setInterval(() => {
-      if (data?.run.status && !['completed', 'failed'].includes(data.run.status)) {
+      if (data?.run.status && !['completed', 'failed', 'scraped'].includes(data.run.status)) {
         fetchData()
       }
     }, 5000)

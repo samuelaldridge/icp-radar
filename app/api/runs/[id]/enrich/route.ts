@@ -65,12 +65,6 @@ export async function POST(
 
     await db.from('runs').update({ status: 'evaluating' }).eq('id', id)
 
-    // Auto-trigger evaluate step server-side
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
-    fetch(`${baseUrl}/api/runs/${id}/evaluate`, { method: 'POST' }).catch(() => {})
-
     return NextResponse.json({ success: true, enriched: toEnrich.length })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
