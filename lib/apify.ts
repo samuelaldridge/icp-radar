@@ -9,7 +9,7 @@ async function startRun(actorId: string, input: Record<string, unknown>) {
       Authorization: `Bearer ${APIFY_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ input }),
+    body: JSON.stringify(input),
   })
   if (!res.ok) {
     const text = await res.text()
