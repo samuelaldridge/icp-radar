@@ -87,21 +87,8 @@ export default function NewRunPage() {
 
       toast.success('Run created! Starting scrape...')
 
-      // Kick off scraping automatically
-      fetch(`/api/runs/${run.id}/scrape`, { method: 'POST' }).then(async (scrapeRes) => {
-        if (scrapeRes.ok) {
-          toast.success('Scraping complete. Enriching profiles...')
-          const enrichRes = await fetch(`/api/runs/${run.id}/enrich`, { method: 'POST' })
-          if (enrichRes.ok) {
-            toast.success('Enrichment complete. AI is evaluating profiles...')
-            fetch(`/api/runs/${run.id}/evaluate`, { method: 'POST' }).then(() => {
-              toast.success('Run complete!')
-            })
-          }
-        } else {
-          toast.error('Scraping failed. Check run for details.')
-        }
-      })
+      // Kick off scraping — enrich and evaluate chain automatically server-side
+      fetch(`/api/runs/${run.id}/scrape`, { method: 'POST' }).catch(() => {})
 
       router.push(`/runs/${run.id}`)
     } catch {

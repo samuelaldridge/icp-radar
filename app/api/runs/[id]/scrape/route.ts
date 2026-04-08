@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { scrapeLinkedInPosts } from '@/lib/apify'
 
+export const maxDuration = 300
+
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -68,6 +70,12 @@ export async function POST(
       total_posts: run.post_urls.length,
       total_profiles: uniqueProfiles.length,
     }).eq('id', id)
+
+    // Auto-trigger enrich step server-side
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000'
+    fetch(`${baseUrl}/api/runs/${id}/enrich`, { method: 'POST' }).catch(() => {})
 
     return NextResponse.json({
       success: true,

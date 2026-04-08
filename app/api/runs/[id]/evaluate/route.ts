@@ -3,6 +3,8 @@ import { createServiceClient } from '@/lib/supabase'
 import { evaluateProfile } from '@/lib/anthropic'
 import type { Profile, ICPSettings } from '@/types'
 
+export const maxDuration = 300
+
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
