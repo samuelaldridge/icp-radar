@@ -1,6 +1,7 @@
 export type RunStatus =
   | 'pending'
   | 'scraping'
+  | 'scraped'
   | 'enriching'
   | 'evaluating'
   | 'completed'

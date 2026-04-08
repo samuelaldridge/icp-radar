@@ -15,8 +15,14 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import type { Run, ICPEvaluation } from '@/types'
 
+interface RunProfile {
+  id: string
+  profile: unknown
+}
+
 interface RunDetail {
   run: Run
+  runProfiles: RunProfile[]
   evaluations: ICPEvaluation[]
 }
 
@@ -85,6 +91,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
     completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     failed: 'bg-red-500/10 text-red-400 border-red-500/20',
     scraping: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    scraped: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     enriching: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     evaluating: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     pending: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
@@ -114,6 +121,11 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
 
         {/* Action buttons */}
         <div className="flex gap-2">
+          {run.status === 'scraped' && (
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white" onClick={() => handleRerun('enrich')}>
+              Enrich Profiles
+            </Button>
+          )}
           {run.status === 'failed' && (
             <>
               <Button size="sm" variant="outline" className="border-white/10 text-white/60 hover:text-white" onClick={() => handleRerun('scrape')}>
@@ -123,11 +135,6 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
                 Retry Enrich
               </Button>
             </>
-          )}
-          {run.status === 'enriching' && (
-            <Button size="sm" variant="outline" className="border-white/10 text-white/60 hover:text-white" onClick={() => handleRerun('evaluate')}>
-              Start Evaluate
-            </Button>
           )}
           <Button size="sm" variant="ghost" className="text-white/40 hover:text-white" onClick={fetchData}>
             <RefreshCw className="w-3.5 h-3.5" />
@@ -153,7 +160,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Progress */}
-      {!['completed', 'failed', 'pending'].includes(run.status) && (
+      {!['completed', 'failed', 'pending', 'scraped'].includes(run.status) && (
         <Card className="border-white/5 bg-white/[0.02] p-4 mb-6">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-white/60 capitalize">{run.status}...</p>
@@ -188,6 +195,44 @@ export default function RunDetailPage({ params }: { params: Promise<{ id: string
           ))}
         </div>
       </Card>
+
+      {/* Scraped profiles — shown before enrichment */}
+      {run.status === 'scraped' && data.runProfiles && data.runProfiles.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider">Scraped Profiles</h2>
+              <p className="text-xs text-white/30 mt-0.5">{data.runProfiles.length} profiles ready to enrich</p>
+            </div>
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white" onClick={() => handleRerun('enrich')}>
+              Enrich All Profiles
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {data.runProfiles.map((rp) => {
+              const profile = rp.profile as { id: string; full_name: string | null; headline: string | null; linkedin_url: string; profile_image: string | null } | null
+              if (!profile) return null
+              return (
+                <Card key={rp.id} className="border-white/5 bg-white/[0.02] p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {profile.profile_image
+                      ? <img src={profile.profile_image} alt="" className="w-8 h-8 object-cover" />
+                      : <span className="text-xs text-white/40">{profile.full_name?.[0] || '?'}</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">{profile.full_name || 'Unknown'}</p>
+                    <p className="text-xs text-white/40 truncate">{profile.headline || 'No headline'}</p>
+                  </div>
+                  <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-3.5 h-3.5 text-white/20 hover:text-blue-400 transition-colors" />
+                  </a>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Evaluations */}
       {evaluations.length > 0 && (
