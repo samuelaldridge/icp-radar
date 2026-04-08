@@ -30,14 +30,27 @@ interface ProfileWithEval {
   }>
 }
 
+interface Run {
+  id: string
+  name: string
+  status: string
+  created_at: string
+}
+
 export default function ProfilesPage() {
   const [profiles, setProfiles] = useState<ProfileWithEval[]>([])
+  const [runs, setRuns] = useState<Run[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [minScore, setMinScore] = useState('1')
   const [icpOnly, setIcpOnly] = useState(false)
   const [fortune500Only, setFortune500Only] = useState(false)
   const [seniority, setSeniority] = useState('all')
+  const [runId, setRunId] = useState('all')
+
+  useEffect(() => {
+    fetch('/api/runs').then((r) => r.json()).then(setRuns).catch(() => {})
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -45,13 +58,14 @@ export default function ProfilesPage() {
     if (icpOnly) params.set('icpOnly', 'true')
     if (fortune500Only) params.set('fortune500', 'true')
     if (seniority !== 'all') params.set('seniority', seniority)
+    if (runId !== 'all') params.set('runId', runId)
 
     setLoading(true)
     fetch(`/api/profiles?${params}`)
       .then((r) => r.json())
       .then(setProfiles)
       .finally(() => setLoading(false))
-  }, [minScore, icpOnly, fortune500Only, seniority])
+  }, [minScore, icpOnly, fortune500Only, seniority, runId])
 
   const filtered = profiles.filter((p) => {
     if (!search) return true
@@ -105,6 +119,20 @@ export default function ProfilesPage() {
               <SelectItem value="all" className="text-white/70">All Seniority</SelectItem>
               {['C-Suite', 'Founder', 'President', 'VP', 'Director', 'Manager', 'Senior', 'Lead'].map((s) => (
                 <SelectItem key={s} value={s} className="text-white/70">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={runId} onValueChange={(v) => setRunId(v ?? 'all')}>
+            <SelectTrigger className="w-44 bg-white/5 border-white/10 text-white text-sm">
+              <SelectValue placeholder="All Runs" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a2e] border-white/10">
+              <SelectItem value="all" className="text-white/70">All Runs</SelectItem>
+              {runs.filter(r => r.status === 'completed').map((r) => (
+                <SelectItem key={r.id} value={r.id} className="text-white/70">
+                  {r.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
