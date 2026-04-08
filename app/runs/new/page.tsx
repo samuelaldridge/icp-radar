@@ -143,7 +143,7 @@ export default function NewRunPage() {
         <input
           type="range"
           min={5}
-          max={100}
+          max={500}
           step={5}
           value={limitPerSource}
           onChange={(e) => setLimitPerSource(Number(e.target.value))}
@@ -151,7 +151,7 @@ export default function NewRunPage() {
         />
         <div className="flex justify-between mt-1">
           <span className="text-[10px] text-white/20">5</span>
-          <span className="text-[10px] text-white/20">100</span>
+          <span className="text-[10px] text-white/20">500</span>
         </div>
         {urls.length > 0 && (
           <p className="text-xs text-white/30 mt-2">
