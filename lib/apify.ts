@@ -60,10 +60,8 @@ export async function scrapeLinkedInPosts(
 ): Promise<ScrapedProfile[]> {
   const actorId = process.env.APIFY_POST_SCRAPER_ACTOR!
   const input = {
-    deepScrape: true,
-    limitPerSource,
-    rawData: false,
-    urls: postUrls,
+    posts: postUrls,
+    maxItems: limitPerSource,
   }
 
   const run = await startRun(actorId, input)
