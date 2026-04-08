@@ -71,11 +71,38 @@ export async function scrapeLinkedInPosts(
   const profiles: ScrapedProfile[] = []
 
   for (const item of items as Record<string, unknown>[]) {
-    const sourceUrl = (item.postUrl as string) || (item.url as string) || ''
+    // harvestapi returns one item per reactor directly
+    const profileUrl =
+      (item.profileUrl as string) ||
+      (item.linkedinUrl as string) ||
+      (item.url as string) ||
+      ''
 
-    // Extract commenters and likers from the post
-    const engagers = extractEngagers(item, sourceUrl)
-    profiles.push(...engagers)
+    if (profileUrl && profileUrl.includes('linkedin.com/in/')) {
+      const sourceUrl =
+        (item.postUrl as string) ||
+        (item.postLink as string) ||
+        (item.sourceUrl as string) ||
+        postUrls[0] ||
+        ''
+
+      profiles.push({
+        profileUrl,
+        firstName: item.firstName as string,
+        lastName: item.lastName as string,
+        fullName:
+          (item.fullName as string) ||
+          (item.name as string) ||
+          `${item.firstName || ''} ${item.lastName || ''}`.trim(),
+        headline: (item.headline as string) || (item.title as string),
+        sourcePostUrl: sourceUrl,
+      })
+    } else {
+      // Fallback: item might be a post container with nested engagers
+      const sourceUrl = (item.postUrl as string) || (item.url as string) || ''
+      const engagers = extractEngagers(item, sourceUrl)
+      profiles.push(...engagers)
+    }
   }
 
   return profiles
