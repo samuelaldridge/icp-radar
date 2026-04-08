@@ -13,6 +13,7 @@ export interface Run {
   name: string
   status: RunStatus
   post_urls: string[]
+  limit_per_source: number
   total_posts: number
   total_profiles: number
   evaluated_profiles: number

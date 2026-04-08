@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const db = createServiceClient()
   const body = await req.json()
-  const { name, post_urls } = body
+  const { name, post_urls, limit_per_source } = body
 
   if (!post_urls || post_urls.length === 0) {
     return NextResponse.json({ error: 'No post URLs provided' }, { status: 400 })
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     .insert({
       name: name || `Run ${new Date().toLocaleDateString()}`,
       post_urls,
+      limit_per_source: limit_per_source || 10,
       status: 'pending',
     })
     .select()

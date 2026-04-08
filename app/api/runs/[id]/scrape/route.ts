@@ -22,7 +22,7 @@ export async function POST(
   await db.from('runs').update({ status: 'scraping' }).eq('id', id)
 
   try {
-    const profiles = await scrapeLinkedInPosts(run.post_urls)
+    const profiles = await scrapeLinkedInPosts(run.post_urls, run.limit_per_source || 10)
 
     // Deduplicate by profileUrl
     const seen = new Set<string>()

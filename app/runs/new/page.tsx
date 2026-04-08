@@ -17,6 +17,7 @@ export default function NewRunPage() {
   const [pastedUrls, setPastedUrls] = useState('')
   const [urls, setUrls] = useState<string[]>([])
   const [singleUrl, setSingleUrl] = useState('')
+  const [limitPerSource, setLimitPerSource] = useState(10)
   const [loading, setLoading] = useState(false)
 
   const parseUrls = (text: string): string[] => {
@@ -77,6 +78,7 @@ export default function NewRunPage() {
         body: JSON.stringify({
           name: name || `Run — ${new Date().toLocaleDateString()}`,
           post_urls: urls,
+          limit_per_source: limitPerSource,
         }),
       })
 
@@ -127,6 +129,35 @@ export default function NewRunPage() {
           placeholder={`Run — ${new Date().toLocaleDateString()}`}
           className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
         />
+      </Card>
+
+      {/* Scrape Limit */}
+      <Card className="border-white/5 bg-white/[0.02] p-5 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <Label className="text-white/60 text-xs block mb-0.5">Profiles per Post</Label>
+            <p className="text-white/25 text-xs">Max LinkedIn profiles to scrape from each post</p>
+          </div>
+          <span className="text-2xl font-bold text-white w-12 text-right">{limitPerSource}</span>
+        </div>
+        <input
+          type="range"
+          min={5}
+          max={100}
+          step={5}
+          value={limitPerSource}
+          onChange={(e) => setLimitPerSource(Number(e.target.value))}
+          className="w-full accent-violet-500"
+        />
+        <div className="flex justify-between mt-1">
+          <span className="text-[10px] text-white/20">5</span>
+          <span className="text-[10px] text-white/20">100</span>
+        </div>
+        {urls.length > 0 && (
+          <p className="text-xs text-white/30 mt-2">
+            Up to <span className="text-violet-300">{urls.length * limitPerSource}</span> total profiles across {urls.length} post{urls.length !== 1 ? 's' : ''}
+          </p>
+        )}
       </Card>
 
       {/* URL Input */}
