@@ -43,6 +43,8 @@ export async function POST(
             first_name: scraped.firstName,
             last_name: scraped.lastName,
             headline: scraped.headline,
+            job_title: scraped.headline,
+            profile_image: scraped.profileImage || null,
           },
           { onConflict: 'linkedin_url', ignoreDuplicates: false }
         )

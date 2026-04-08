@@ -51,6 +51,7 @@ export interface ScrapedProfile {
   lastName?: string
   fullName?: string
   headline?: string
+  profileImage?: string
   sourcePostUrl: string
 }
 
@@ -71,37 +72,27 @@ export async function scrapeLinkedInPosts(
   const profiles: ScrapedProfile[] = []
 
   for (const item of items as Record<string, unknown>[]) {
-    // harvestapi returns one item per reactor directly
-    const profileUrl =
-      (item.profileUrl as string) ||
-      (item.linkedinUrl as string) ||
-      (item.url as string) ||
-      ''
+    // harvestapi/linkedin-post-reactions: profile is nested under item.actor
+    // item.query.post holds the source post URL
+    const actor = item.actor as Record<string, unknown> | undefined
+    const query = item.query as Record<string, unknown> | undefined
 
-    if (profileUrl && profileUrl.includes('linkedin.com/in/')) {
-      const sourceUrl =
-        (item.postUrl as string) ||
-        (item.postLink as string) ||
-        (item.sourceUrl as string) ||
-        postUrls[0] ||
-        ''
-
+    if (actor?.linkedinUrl) {
+      const sourceUrl = (query?.post as string) || postUrls[0] || ''
+      const nameParts = ((actor.name as string) || '').trim().split(' ')
       profiles.push({
-        profileUrl,
-        firstName: item.firstName as string,
-        lastName: item.lastName as string,
-        fullName:
-          (item.fullName as string) ||
-          (item.name as string) ||
-          `${item.firstName || ''} ${item.lastName || ''}`.trim(),
-        headline: (item.headline as string) || (item.title as string),
+        profileUrl: actor.linkedinUrl as string,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        fullName: (actor.name as string) || '',
+        headline: (actor.position as string) || '',
+        profileImage: (actor.pictureUrl as string) || '',
         sourcePostUrl: sourceUrl,
       })
     } else {
-      // Fallback: item might be a post container with nested engagers
+      // Fallback for other actor formats
       const sourceUrl = (item.postUrl as string) || (item.url as string) || ''
-      const engagers = extractEngagers(item, sourceUrl)
-      profiles.push(...engagers)
+      profiles.push(...extractEngagers(item, sourceUrl))
     }
   }
 
