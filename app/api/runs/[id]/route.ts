@@ -29,3 +29,16 @@ export async function GET(
 
   return NextResponse.json({ run, runProfiles, evaluations })
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const db = createServiceClient()
+
+  const { error } = await db.from('runs').delete().eq('id', id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}

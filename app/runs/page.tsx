@@ -59,9 +59,14 @@ export default function RunsPage() {
       ) : (
         <div className="space-y-3">
           {runs.map((run) => (
-            <RunCard key={run.id} run={run} onDelete={(id) => {
-              setRuns((prev) => prev.filter((r) => r.id !== id))
-              toast.success('Run deleted')
+            <RunCard key={run.id} run={run} onDelete={async (id) => {
+              const res = await fetch(`/api/runs/${id}`, { method: 'DELETE' })
+              if (res.ok) {
+                setRuns((prev) => prev.filter((r) => r.id !== id))
+                toast.success('Run deleted')
+              } else {
+                toast.error('Failed to delete run')
+              }
             }} />
           ))}
         </div>
