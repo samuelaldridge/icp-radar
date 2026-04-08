@@ -2,7 +2,8 @@ const APIFY_API_KEY = process.env.APIFY_API_KEY!
 const BASE_URL = 'https://api.apify.com/v2'
 
 async function startRun(actorId: string, input: Record<string, unknown>) {
-  const res = await fetch(`${BASE_URL}/acts/${actorId}/runs`, {
+  const normalizedId = actorId.replace('/', '~')
+  const res = await fetch(`${BASE_URL}/acts/${normalizedId}/runs`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${APIFY_API_KEY}`,
